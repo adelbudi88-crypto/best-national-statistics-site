@@ -83,15 +83,32 @@ try {
     // --- controls ----------------------------------------------------------
     await page.goto(`http://127.0.0.1:${PORT}/#/`, { waitUntil: 'load' });
     await page.waitForTimeout(400);
-    // year selector changes the highlight panel
-    await page.selectOption('#year-select', '2021');
+    // v2 home: 10 KPI cards, each with a drawn sparkline
+    const kpiCount = await page.locator('#kpi-grid .kpi').count();
+    check('home has 10 KPI cards', kpiCount === 10, `kpis=${kpiCount}`);
+    const sparkCount = await page.locator('#kpi-grid .kpi-spark').count();
+    check('home has 10 sparkline canvases', sparkCount === 10, `sparks=${sparkCount}`);
+    const sparkDrawn = await page.evaluate(() => {
+      const c = document.querySelector('.kpi-spark');
+      if (!c) return false;
+      const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+      let n = 0;
+      for (let i = 3; i < d.length; i += 16) if (d[i] > 0) n++;
+      return n > 3;
+    });
+    check('home sparkline draws', sparkDrawn);
+    const homeText = await page.locator('#app').innerText();
+    check('home today strip (kurs/beras/BBM 26 Nov)', homeText.includes('18.211') && homeText.includes('14.670') && homeText.includes('10.000'), homeText.slice(0, 120).replace(/\n/g, ' | '));
+    check('home KPI values (ekspor/UMP/stunting)', homeText.includes('282,91') && homeText.includes('3,51') && homeText.includes('19,8%'));
+    // top-10 provinces table sorts by IPM: DKI Jakarta first
+    await page.click('#top10-table [data-sort="ipm"]');
     await page.waitForTimeout(200);
-    const spot2021 = await page.locator('#spot-grid').innerText();
-    check('home year selector 2021', spot2021.includes('3,70') && spot2021.includes('1,87'), spot2021.replace(/\n/g, ' | ').slice(0, 160));
-    await page.selectOption('#year-select', '2025');
+    const topFirst = await page.locator('#top10-table tbody tr').first().innerText();
+    check('top10 sort by IPM (DKI Jakarta first, 85,05)', topFirst.includes('DKI Jakarta') && topFirst.includes('85,05'), topFirst.replace(/\n/g, ' | '));
+    await page.click('#top10-table [data-sort="pop"]');
     await page.waitForTimeout(200);
-    const spot2025 = await page.locator('#spot-grid').innerText();
-    check('home year selector 2025', spot2025.includes('5,11') && spot2025.includes('2,92'), spot2025.replace(/\n/g, ' | ').slice(0, 160));
+    const topPop = await page.locator('#top10-table tbody tr').first().innerText();
+    check('top10 sort by population (Jawa Barat first)', topPop.includes('Jawa Barat') && topPop.includes('51,16'), topPop.replace(/\n/g, ' | '));
 
     // header search finds an indicator
     await page.fill('#site-search', 'stunting');
@@ -102,7 +119,7 @@ try {
     await page.waitForTimeout(400);
     check('search result navigates to kesehatan', page.url().includes('#/kesehatan'), page.url());
 
-    // penduduk: tab switch + province search
+    // penduduk: tab switch + province search + pyramid
     await page.goto(`http://127.0.0.1:${PORT}/#/penduduk`, { waitUntil: 'load' });
     await page.waitForTimeout(300);
     await page.click('[data-tab="growth"]');
@@ -111,13 +128,42 @@ try {
     await page.waitForTimeout(200);
     const provText = await page.locator('#prov-table').innerText();
     check('province search "Jawa Timur"', provText.includes('42,35') && !provText.includes('Jawa Barat'), provText.replace(/\n/g, ' | ').slice(0, 120));
+    const pyrDrawn = await page.evaluate(() => {
+      const c = document.querySelector('#pyramid-chart');
+      if (!c) return false;
+      const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+      let n = 0;
+      for (let i = 3; i < d.length; i += 401 * 4) if (d[i] > 0) n++;
+      return n > 5;
+    });
+    check('penduduk pyramid draws', pyrDrawn);
+    const pyrText = await page.locator('#app').innerText();
+    check('penduduk pyramid facts (143,55 / 101,9 / 69,0%)', pyrText.includes('143,55') && pyrText.includes('101,9') && pyrText.includes('69,0%'));
 
-    // ekonomi: tab switch + CSV button exists and is clickable
+    // ekonomi: tab switch + sector chart + commodity tables
     await page.goto(`http://127.0.0.1:${PORT}/#/ekonomi`, { waitUntil: 'load' });
     await page.waitForTimeout(300);
     await page.click('[data-tab="growth"]');
     await page.waitForTimeout(200);
     check('ekonomi growth tab', (await page.locator('#app').innerText()).includes('Pertumbuhan'));
+    const sectorDrawn = await page.evaluate(() => {
+      const c = document.querySelector('#sector-chart');
+      if (!c) return false;
+      const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+      let n = 0;
+      for (let i = 3; i < d.length; i += 401 * 4) if (d[i] > 0) n++;
+      return n > 5;
+    });
+    check('ekonomi sector chart draws', sectorDrawn);
+    const econText = await page.locator('#app').innerText();
+    check('ekonomi commodity tables (45,11 / 36,17 / 4.541,5)', econText.includes('45,11') && econText.includes('36,17') && econText.includes('4.541,5'));
+    check('ekonomi commodity CSV button', (await page.locator('#commodity-csv').count()) === 1);
+
+    // perdagangan: 2025 KPIs
+    await page.goto(`http://127.0.0.1:${PORT}/#/perdagangan`, { waitUntil: 'load' });
+    await page.waitForTimeout(300);
+    const tradeText = await page.locator('#app').innerText();
+    check('perdagangan 2025 KPIs (282,91 / 41,05 / 68 bln)', tradeText.includes('282,91') && tradeText.includes('41,05') && tradeText.includes('68 bln'));
 
     // tabel: sort by inflation descending, year filter, column search
     await page.goto(`http://127.0.0.1:${PORT}/#/tabel`, { waitUntil: 'load' });
@@ -159,8 +205,9 @@ try {
   ];
   for (const shot of shots) {
     await page.setViewportSize(shot.viewport);
+    await page.waitForTimeout(400); // let the previous page's debounced chart redraw fire before navigating
     await page.goto(shot.url.replace('PORT', String(PORT)), { waitUntil: 'load' });
-    await page.waitForTimeout(600);
+    await page.waitForTimeout(1500); // let debounced chart redraws settle; 600ms raced them on the phone shot
     await page.screenshot({ path: join(ROOT, 'screenshots', shot.name), type: 'jpeg', quality: 82 });
     results[shot.name] = shotSize(shot.name);
     console.log(`shot ${shot.name}: ${results[shot.name]}`);

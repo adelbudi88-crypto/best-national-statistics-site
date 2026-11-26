@@ -194,6 +194,85 @@ export function drawGroupedBars(canvas, opts) {
   attachTooltip(canvas, points, (p) => `${p.series} · ${p.label}: ${Number(p.value).toLocaleString('id-ID')}${opts.unit || ''}`);
 }
 
+export function drawSparkline(canvas, values, color) {
+  if (!canvas || !canvas.isConnected) return;
+  const { ctx, w, h } = setupCanvas(canvas);
+  const clean = values.filter((v) => v != null);
+  if (clean.length < 2) return;
+  const min = Math.min(...clean);
+  const max = Math.max(...clean);
+  const span = max - min || 1;
+  const padX = 3; const padY = 4;
+  const xAt = (i) => padX + ((w - padX * 2) * i) / (values.length - 1);
+  const yAt = (v) => padY + (h - padY * 2) * (1 - (v - min) / span);
+  // soft area fill
+  ctx.beginPath();
+  ctx.moveTo(xAt(0), yAt(values[0]));
+  values.forEach((v, i) => ctx.lineTo(xAt(i), yAt(v)));
+  ctx.lineTo(xAt(values.length - 1), h - 2);
+  ctx.lineTo(xAt(0), h - 2);
+  ctx.closePath();
+  ctx.fillStyle = (color || '#0e7490') + '22';
+  ctx.fill();
+  ctx.beginPath();
+  values.forEach((v, i) => { if (i === 0) ctx.moveTo(xAt(i), yAt(v)); else ctx.lineTo(xAt(i), yAt(v)); });
+  ctx.strokeStyle = color || '#0e7490';
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+  // end dot
+  ctx.beginPath();
+  ctx.arc(xAt(values.length - 1), yAt(values[values.length - 1]), 3, 0, Math.PI * 2);
+  ctx.fillStyle = color || '#0e7490';
+  ctx.fill();
+}
+
+export function drawPyramid(canvas, groups) {
+  if (!canvas || !canvas.isConnected) return;
+  const { ctx, w, h } = setupCanvas(canvas);
+  const maxV = Math.max(...groups.flatMap((g) => [g.male, g.female]));
+  const midW = 52; // centre column for age labels
+  const half = (w - midW) / 2;
+  const n = groups.length;
+  const slot = (h - 44) / n;
+  const barH = Math.min(22, slot * 0.62);
+  // header
+  ctx.font = 'bold 11px system-ui, sans-serif';
+  ctx.fillStyle = '#0e7490';
+  ctx.textAlign = 'center';
+  ctx.fillText('Laki-laki', half / 2, 12);
+  ctx.fillStyle = '#c2410c';
+  ctx.fillText('Perempuan', w - half / 2, 12);
+  groups.forEach((g, i) => {
+    const y = 20 + slot * i + (slot - barH) / 2;
+    const mw = (g.male / maxV) * (half - 8);
+    const fw = (g.female / maxV) * (half - 8);
+    ctx.fillStyle = '#0e7490';
+    ctx.beginPath();
+    ctx.roundRect(half - mw, y, mw, barH, [4, 0, 0, 4]);
+    ctx.fill();
+    ctx.fillStyle = '#c2410c';
+    ctx.beginPath();
+    ctx.roundRect(w - half, y, fw, barH, [0, 4, 4, 0]);
+    ctx.fill();
+    ctx.font = '11px system-ui, sans-serif';
+    ctx.fillStyle = INK;
+    ctx.textAlign = 'center';
+    ctx.fillText(g.group, w / 2, y + barH / 2 + 4);
+    ctx.font = '10px system-ui, sans-serif';
+    const mTxt = g.male.toLocaleString('id-ID', { maximumFractionDigits: 2 });
+    const fTxt = g.female.toLocaleString('id-ID', { maximumFractionDigits: 2 });
+    if (mw > 46) { ctx.fillStyle = '#fff'; ctx.textAlign = 'right'; ctx.fillText(mTxt, half - 5, y + barH / 2 + 3); }
+    else { ctx.fillStyle = MUTED; ctx.textAlign = 'right'; ctx.fillText(mTxt, half - mw - 5, y + barH / 2 + 3); }
+    if (fw > 46) { ctx.fillStyle = '#fff'; ctx.textAlign = 'left'; ctx.fillText(fTxt, w - half + 5, y + barH / 2 + 3); }
+    else { ctx.fillStyle = MUTED; ctx.textAlign = 'left'; ctx.fillText(fTxt, w - half + fw + 5, y + barH / 2 + 3); }
+  });
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.fillStyle = MUTED;
+  ctx.textAlign = 'center';
+  ctx.fillText('Juta jiwa per kelompok umur, 2025', w / 2, h - 6);
+}
+
 export function drawHorizontalBars(canvas, opts) {
   if (!canvas || !canvas.isConnected) return;
   const { ctx, w, h } = setupCanvas(canvas);

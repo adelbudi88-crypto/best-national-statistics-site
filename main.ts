@@ -16,7 +16,11 @@
 // entry must carry 3 or 4 images, each no bigger than 256 KiB — so a
 // bad screenshot set fails here, loudly, instead of at the scorer.
 //
-// Run it locally with:
+// v2 (26 Nov 2026, agent-written): home now carries 10 KPI sparklines,
+// two first-screen charts, a sortable top-10 provinces table and a
+// 26 Nov 2026 "angka hari ini" strip; Penduduk gains a 2025 age–sex
+// pyramid; Ekonomi gains a sector bar chart and 2025 commodity tables.
+// Nothing here changes the dossier contract above.
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 // Outside the grader's container MAKEFUN_OUTPUT_DIR stands in for
 // /output. Serve the site itself with `node serve.ts`, then open

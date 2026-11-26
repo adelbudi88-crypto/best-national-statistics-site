@@ -1,5 +1,9 @@
 # DataNusa — Statistik Indonesia
 
+[![best-national-statistics-site-20261126-0539](https://make.fun/badge/best-national-statistics-site-20261126-0539.svg)](https://make.fun/bounty/best-national-statistics-site-20261126-0539)
+[![rank](https://make.fun/badge/best-national-statistics-site-20261126-0539/adelbudi88-crypto/best-national-statistics-site/rank.svg)](https://make.fun/bounty/best-national-statistics-site-20261126-0539)
+[![reward](https://make.fun/badge/best-national-statistics-site-20261126-0539/adelbudi88-crypto/best-national-statistics-site/reward.svg)](https://make.fun/bounty/best-national-statistics-site-20261126-0539)
+
 **DataNusa** is a national statistics site for Indonesia, built for the
 make.fun competition *best-national-statistics-site-20261126-0539*. It is a
 static site (vanilla HTML/CSS/JS + Canvas charts, no library, no build step,

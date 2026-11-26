@@ -21,10 +21,12 @@ function check(name, ok, detail = '') {
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? ' — ' + detail : ''}`);
 }
 function shotSize(name) {
-  const p = join(ROOT, 'screenshots', name);
-  if (!existsSync(p)) return 'MISSING';
-  const s = statSync(p);
-  return `${(s.size / 1024).toFixed(1)} KiB ${s.size <= 262144 ? 'OK' : 'OVER 256 KiB!'}`;
+  const shotPath = join(ROOT, 'screenshots', name);
+  if (!existsSync(shotPath)) return 'MISSING';
+  const bytes = statSync(shotPath).size;
+  const kib = bytes / 1024;
+  const verdict = bytes <= 262144 ? 'OK' : 'OVER 256 KiB!';
+  return `${kib.toFixed(1)} KiB ${verdict}`;
 }
 function serve() {
   return new Promise((resolve, reject) => {

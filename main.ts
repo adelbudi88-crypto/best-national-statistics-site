@@ -16,11 +16,12 @@
 // entry must carry 3 or 4 images, each no bigger than 256 KiB — so a
 // bad screenshot set fails here, loudly, instead of at the scorer.
 //
-// v2 (26 Nov 2026, agent-written): home now carries 10 KPI sparklines,
-// two first-screen charts, a sortable top-10 provinces table and a
-// 26 Nov 2026 "angka hari ini" strip; Penduduk gains a 2025 age–sex
-// pyramid; Ekonomi gains a sector bar chart and 2025 commodity tables.
-// Nothing here changes the dossier contract above.
+// v3 (28 Nov 2026, agent-written): home now carries a compact 5x2 KPI
+// grid with a source line per card, two first-screen charts, an interactive
+// island map + sortable 38-province table, a 2021–2025 year focus and a
+// 10-year chart with a series picker; the master table has no empty cells
+// left (population 2021–2024 and revised IPM 2021 filled in). Nothing here
+// changes the dossier contract above.
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 // Outside the grader's container MAKEFUN_OUTPUT_DIR stands in for
 // /output. Serve the site itself with `node serve.ts`, then open
@@ -86,7 +87,7 @@ if (existsSync(join(here, 'screenshots'))) {
 
 const shots = checkScreenshots(join(out, 'screenshots'));
 const appFiles = readdirSync(join(out, 'app')).sort();
-console.log(`DataNusa: copied app/ (${appFiles.join(', ')}) and ${shots.length} screenshots (${shots.join(', ')}) to ${out}`);
+console.log(`DataNusa v3: copied app/ (${appFiles.join(', ')}) and ${shots.length} screenshots (${shots.join(', ')}) to ${out}`);
 
 writeFileSync(join(out, 'dossier.json'), buildDossier(out, DOSSIER_CAPS));
 console.log(`DataNusa: dossier.json written (${statSync(join(out, 'dossier.json')).size} bytes)`);

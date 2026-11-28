@@ -1,7 +1,7 @@
 // views.js — hash-routed pages for DataNusa. Every page is rendered from
 // data.js; every button, tab, select and sortable header does what it says.
 import {
-  YEARS, SOURCES, POPULATION_POINTS, POP_GROWTH, POP_FACTS, TOP_PROVINCES,
+  YEARS, SOURCES, POPULATION_POINTS, POPULATION_SERIES, TEN_YEAR, PROVINCES_38, POP_GROWTH, POP_FACTS, TOP_PROVINCES,
   DUKCAPIL_TOTAL, PYRAMID_2025, PYRAMID_TOTALS, AGE_BROAD, TOP10_PROVINCES,
   UMP, TODAY_PRICES, GDP, GDP_SECTORS_2025, INFLATION, INFLATION_COMPONENTS_DEC2025, INFLATION_TARGET,
   TPT, LABOR_FEB2025, TPT_PROVINCES, POVERTY, POVERTY_MAR2025, IPM, IPM_COMPONENTS,
@@ -64,24 +64,91 @@ export function viewHome(root) {
   <div class="kpi-grid" id="kpi-grid"></div>
 
   <div class="two-col home-charts">
-    ${chartCard('PDB nominal, 2021–2025 (Rp triliun)', 'home-gdp', 220, 'PDB 2025 Rp23.821,1 triliun; tumbuh 5,11%.')}
-    ${chartCard('Inflasi yoy, 2021–2025 (%)', 'home-inf', 220, 'Puncak 5,51% pada 2022; 2,92% pada Desember 2025.')}
+    ${chartCard('PDB nominal, 2021–2025 (Rp triliun)', 'home-gdp', 170, 'PDB 2025 Rp23.821,1 triliun; tumbuh 5,11%.')}
+    ${chartCard('Inflasi yoy, 2021–2025 (%)', 'home-inf', 170, 'Puncak 5,51% pada 2022; 2,92% pada Desember 2025.')}
   </div>
 
+  <section class="card" id="map-card">
+    <h2>Peta Indonesia — klik pulau untuk melihat provinsinya</h2>
+    <p class="card-note">Tujuh wilayah pulau, 38 provinsi. Klik sebuah pulau untuk menyaring tabel di bawah dan melihat ringkasannya; klik baris provinsi untuk detail provinsi itu.</p>
+    <div class="map-wrap">
+      <svg id="island-map" viewBox="0 0 640 300" role="group" aria-label="Peta skematis Indonesia per pulau" xmlns="http://www.w3.org/2000/svg">
+        <g class="island" data-island="Sumatera" tabindex="0" role="button" aria-label="Pulau Sumatera, 10 provinsi">
+          <polygon points="60,40 95,30 110,70 95,120 70,170 45,150 40,90" />
+          <text x="72" y="105">Sumatera</text>
+        </g>
+        <g class="island" data-island="Jawa" tabindex="0" role="button" aria-label="Pulau Jawa, 6 provinsi">
+          <polygon points="180,190 330,175 350,195 320,210 190,212" />
+          <text x="255" y="200">Jawa</text>
+        </g>
+        <g class="island" data-island="Kalimantan" tabindex="0" role="button" aria-label="Pulau Kalimantan, 5 provinsi">
+          <polygon points="300,60 380,35 440,60 430,130 360,155 305,120" />
+          <text x="365" y="100">Kalimantan</text>
+        </g>
+        <g class="island" data-island="Sulawesi" tabindex="0" role="button" aria-label="Pulau Sulawesi, 6 provinsi">
+          <polygon points="480,70 520,55 545,85 520,110 545,140 515,160 490,130 470,100" />
+          <text x="508" y="115">Sulawesi</text>
+        </g>
+        <g class="island" data-island="Bali &amp; Nusa Tenggara" tabindex="0" role="button" aria-label="Bali dan Nusa Tenggara, 3 provinsi">
+          <polygon points="360,215 470,205 480,222 370,232" />
+          <text x="415" y="222">Bali &amp; Nusa Tenggara</text>
+        </g>
+        <g class="island" data-island="Maluku" tabindex="0" role="button" aria-label="Kepulauan Maluku, 2 provinsi">
+          <polygon points="560,150 600,140 615,175 585,195 555,180" />
+          <text x="583" y="170">Maluku</text>
+        </g>
+        <g class="island" data-island="Papua" tabindex="0" role="button" aria-label="Pulau Papua, 6 provinsi">
+          <polygon points="520,235 610,215 635,250 600,285 530,275" />
+          <text x="578" y="255">Papua</text>
+        </g>
+      </svg>
+      <div class="map-detail" id="map-detail">
+        <strong>Indonesia — 38 provinsi</strong>
+        <span>Penduduk 2024: 281,60 juta jiwa · IPM 2025: 54,91–85,05 · UMP 2025: Rp2.169.348–Rp5.396.760/bulan</span>
+      </div>
+    </div>
+    <div class="map-actions">
+      <button type="button" class="btn btn-small" id="island-all">Semua pulau</button>
+      <span class="card-note" id="island-count">Menampilkan 38 dari 38 provinsi.</span>
+    </div>
+  </section>
+
   <section class="card">
-    <h2>Sepuluh provinsi teratas</h2>
-    <p class="card-note">Provinsi dengan penduduk terbanyak — klik judul kolom untuk mengurutkan menurut penduduk, PDRB per kapita, atau IPM.</p>
-    <div class="table-scroll"><table class="data-table sortable" id="top10-table">
+    <h2>38 provinsi — penduduk, IPM, dan UMP</h2>
+    <p class="card-note">Klik judul kolom untuk mengurutkan. Klik baris untuk melihat detail provinsi di panel peta.</p>
+    <label class="field">Cari provinsi
+      <input id="prov38-search" type="search" placeholder="mis. Papua, Jawa, Kalimantan" autocomplete="off">
+    </label>
+    <div class="table-scroll prov38-scroll"><table class="data-table sortable" id="prov38-table">
       <thead><tr>
         <th>#</th>
         <th><button type="button" data-sort="name">Provinsi <span class="sort-mark"></span></button></th>
-        <th><button type="button" data-sort="pop">Penduduk (juta) <span class="sort-mark"></span></button></th>
-        <th><button type="button" data-sort="pdrbPerCapita">PDRB per kapita (Rp juta) <span class="sort-mark"></span></button></th>
-        <th><button type="button" data-sort="ipm">IPM 2025 <span class="sort-mark"></span></button></th>
+        <th><button type="button" data-sort="island">Pulau <span class="sort-mark"></span></button></th>
+        <th><button type="button" data-sort="pop2024">Penduduk 2024 (juta) <span class="sort-mark"></span></button></th>
+        <th><button type="button" data-sort="ipm2025">IPM 2025 <span class="sort-mark"></span></button></th>
+        <th><button type="button" data-sort="ump2025">UMP 2025 (Rp/bulan) <span class="sort-mark"></span></button></th>
       </tr></thead>
       <tbody></tbody>
     </table></div>
-    <p class="card-note">Sumber: penduduk — BPS Proyeksi 2026 &amp; Dukcapil Semester II 2025; PDRB per kapita — BPS, PDRB Provinsi 2021–2025 (rilis 13 Apr 2026, angka 2025 sangat sementara); IPM — BPS, IPM 2025 (rilis 5 Nov 2025). PDRB per kapita adalah nilai output per penduduk, bukan pendapatan yang diterima tiap orang.</p>
+    <p class="card-note">Sumber: penduduk — BPS, Proyeksi Penduduk Interim (pertengahan 2024); IPM — BPS, IPM 2025 (rilis 5 Nov 2025); UMP — Kemnaker, Permenaker 16/2024 &amp; SK Gubernur. UMP adalah upah minimum provinsi, bukan rata-rata upah yang diterima pekerja.</p>
+  </section>
+
+  <section class="card" id="year-focus-card">
+    <h2>Tahun fokus 2021–2025</h2>
+    <p class="card-note">Pilih satu tahun untuk melihat delapan indikator utama tahun itu — dan sorotan tahun itu pada grafik sepuluh tahun di bawah.</p>
+    <div class="tabs" role="tablist" id="year-tabs">
+      ${YEARS.map((y) => `<button type="button" role="tab" data-year="${y}" class="${y === 2025 ? 'active' : ''}" aria-selected="${y === 2025}">${y}</button>`).join('')}
+    </div>
+    <div class="year-summary" id="year-summary"></div>
+    <h3 class="chart-title">10 tahun dalam 1 grafik</h3>
+    <div class="tabs" role="tablist" id="series-tabs">
+      <button type="button" role="tab" data-series="population" class="active" aria-selected="true">Penduduk</button>
+      <button type="button" role="tab" data-series="gdp" aria-selected="false">PDB</button>
+      <button type="button" role="tab" data-series="inflation" aria-selected="false">Inflasi</button>
+      <button type="button" role="tab" data-series="exports" aria-selected="false">Ekspor</button>
+    </div>
+    <div class="chart-wrap"><canvas id="tenyear-chart" data-height="240"></canvas></div>
+    <p class="card-note" id="tenyear-note">Penduduk 2016–2025 (juta jiwa), BPS proyeksi pertengahan tahun; 2020 adalah Sensus Penduduk.</p>
   </section>
 
   <section class="card">
@@ -102,21 +169,21 @@ export function viewHome(root) {
     <ul class="releases">${RELEASES.map((r) => `<li><span class="rel-date">${r.date}</span><span class="rel-title">${r.title}</span><span class="rel-src">${r.source}</span></li>`).join('')}</ul>
   </section>`;
 
-  // --- 10 KPI, each with a sparkline of its own 2021–2025 series + delta ---
+  // --- 10 KPI, each with a sparkline of its own 2021–2025 series + delta + source ---
   const kpis = [
-    { label: 'Penduduk', value: '284,44 jt', sub: 'Proyeksi pertengahan 2025 · BPS', route: '#/penduduk', series: POPULATION_POINTS.map((d) => d.pop), color: '#0e7490', delta: '▲ 1,08%/thn', dir: 'up' },
-    { label: 'PDB', value: 'Rp23.821 T', sub: '2025 · tumbuh 5,11%', route: '#/ekonomi', series: GDP.nominal.map((d) => d.value), color: '#0e7490', delta: '▲ 5,11% (2025)', dir: 'up' },
-    { label: 'Inflasi', value: '2,92%', sub: 'yoy Desember 2025 · sasaran 2,5% ± 1%', route: '#/harga', series: INFLATION.map((d) => d.value), color: '#c2410c', delta: '▲ 1,35 poin vs 2024', dir: 'down' },
-    { label: 'Pengangguran', value: '4,76%', sub: 'TPT Februari 2025 · terendah sejak 1995', route: '#/kerja', series: TPT.map((d) => d.value), color: '#0e7490', delta: '▼ 0,06 poin vs 2024', dir: 'up' },
-    { label: 'Kemiskinan', value: '8,47%', sub: 'Maret 2025 · 23,85 juta jiwa', route: '#/kerja', series: POVERTY.map((d) => d.value), color: '#0e7490', delta: '▼ 0,56 poin vs 2024', dir: 'up' },
-    { label: 'IPM', value: '75,90', sub: '2025 · kategori tinggi', route: '#/pendidikan', series: IPM.map((d) => d.value), color: '#0e7490', delta: '▲ 0,88 poin vs 2024', dir: 'up' },
-    { label: 'Ekspor', value: 'US$282,91 M', sub: '2025 · +6,15% vs 2024', route: '#/perdagangan', series: TRADE.map((t) => t.exports), color: '#0e7490', delta: '▲ US$16,38 M vs 2024', dir: 'up' },
-    { label: 'Impor', value: 'US$241,86 M', sub: '2025 · +2,83% vs 2024', route: '#/perdagangan', series: TRADE.map((t) => t.imports), color: '#c2410c', delta: '▲ US$6,66 M vs 2024', dir: 'flat' },
-    { label: 'UMP rata-rata', value: 'Rp3,51 jt', sub: 'Per bulan, 2026 · 38 provinsi', route: '#/kerja', series: UMP.series.map((d) => d.value), color: '#0e7490', delta: '▲ 5,91% vs 2025', dir: 'up' },
-    { label: 'Stunting', value: '19,8%', sub: 'Balita, 2024 · target 2025: 18,8%', route: '#/kesehatan', series: STUNTING.map((d) => d.value), color: '#0e7490', delta: '▼ 1,7 poin vs 2023', dir: 'up' },
+    { label: 'Penduduk', value: '284,44 jt', sub: 'Proyeksi pertengahan 2025', route: '#/penduduk', series: POPULATION_SERIES.map((d) => d.pop), color: '#0e7490', delta: '▲ 1,08%/thn', dir: 'up', src: 'BPS, Proyeksi Penduduk' },
+    { label: 'PDB', value: 'Rp23.821 T', sub: '2025 · tumbuh 5,11%', route: '#/ekonomi', series: GDP.nominal.map((d) => d.value), color: '#0e7490', delta: '▲ 5,11% (2025)', dir: 'up', src: 'BPS, BRS 5 Feb 2026' },
+    { label: 'Inflasi', value: '2,92%', sub: 'yoy Desember 2025 · sasaran 2,5% ± 1%', route: '#/harga', series: INFLATION.map((d) => d.value), color: '#c2410c', delta: '▲ 1,35 poin vs 2024', dir: 'down', src: 'BPS & BI, Des 2025' },
+    { label: 'Pengangguran', value: '4,76%', sub: 'TPT Februari 2025 · terendah sejak 1995', route: '#/kerja', series: TPT.map((d) => d.value), color: '#0e7490', delta: '▼ 0,06 poin vs 2024', dir: 'up', src: 'BPS, Sakernas Feb 2025' },
+    { label: 'Kemiskinan', value: '8,47%', sub: 'Maret 2025 · 23,85 juta jiwa', route: '#/kerja', series: POVERTY.map((d) => d.value), color: '#0e7490', delta: '▼ 0,56 poin vs 2024', dir: 'up', src: 'BPS, Susenas Mar 2025' },
+    { label: 'IPM', value: '75,90', sub: '2025 · kategori tinggi', route: '#/pendidikan', series: IPM.map((d) => d.value), color: '#0e7490', delta: '▲ 0,88 poin vs 2024', dir: 'up', src: 'BPS, IPM 2025' },
+    { label: 'Ekspor', value: 'US$282,91 miliar', sub: '2025 · +6,15% vs 2024', route: '#/perdagangan', series: TRADE.map((t) => t.exports), color: '#0e7490', delta: '▲ US$16,38 miliar vs 2024', dir: 'up', src: 'BPS, BRS 2 Feb 2026' },
+    { label: 'Impor', value: 'US$241,86 miliar', sub: '2025 · +2,83% vs 2024', route: '#/perdagangan', series: TRADE.map((t) => t.imports), color: '#c2410c', delta: '▲ US$6,66 miliar vs 2024', dir: 'flat', src: 'BPS, BRS 2 Feb 2026' },
+    { label: 'UMP rata-rata', value: 'Rp3,51 jt', sub: 'Per bulan, 2026 · 38 provinsi', route: '#/kerja', series: UMP.series.map((d) => d.value), color: '#0e7490', delta: '▲ 5,91% vs 2025', dir: 'up', src: 'Kemnaker, PP 49/2025' },
+    { label: 'Stunting', value: '19,8%', sub: 'Balita, 2024 · target 2025: 18,8%', route: '#/kesehatan', series: STUNTING.map((d) => d.value), color: '#0e7490', delta: '▼ 1,7 poin vs 2023', dir: 'up', src: 'Kemenkes, SSGI 2024' },
   ];
   const grid = root.querySelector('#kpi-grid');
-  grid.innerHTML = kpis.map((k, i) => `<a class="kpi" href="${k.route}"><span class="kpi-label">${k.label}</span><span class="kpi-value">${k.value}</span><canvas class="kpi-spark" data-kpi="${i}" data-height="36"></canvas><span class="kpi-delta ${k.dir}">${k.delta}</span><span class="kpi-sub">${k.sub}</span></a>`).join('');
+  grid.innerHTML = kpis.map((k, i) => `<a class="kpi" href="${k.route}"><span class="kpi-label">${k.label}</span><span class="kpi-value">${k.value}</span><canvas class="kpi-spark" data-kpi="${i}" data-height="22"></canvas><span class="kpi-delta ${k.dir}">${k.delta}</span><span class="kpi-sub">${k.sub}</span><span class="kpi-src">Sumber: ${k.src}</span></a>`).join('');
   const drawSparks = () => {
     root.querySelectorAll('.kpi-spark').forEach((cv) => {
       const k = kpis[Number(cv.dataset.kpi)];
@@ -125,26 +192,115 @@ export function viewHome(root) {
   };
   drawSparks();
 
-  // --- Top-10 provinces table, sortable ---
-  const topBody = root.querySelector('#top10-table tbody');
-  let topKey = 'pop';
-  let topDir = -1;
-  const renderTop10 = () => {
-    const rows = [...TOP10_PROVINCES].sort((a, b) => {
-      const av = a[topKey]; const bv = b[topKey];
-      return typeof av === 'string' ? av.localeCompare(bv) * topDir : (av - bv) * topDir;
+  // --- Peta pulau + tabel 38 provinsi, sortable & searchable ---
+  const detail = root.querySelector('#map-detail');
+  const countNote = root.querySelector('#island-count');
+  const provBody = root.querySelector('#prov38-table tbody');
+  const fmtRp = (v) => 'Rp' + Number(v).toLocaleString('id-ID');
+  let islandFilter = null;
+  let provKey = 'pop2024';
+  let provDir = -1;
+  const showIsland = (island) => {
+    const list = PROVINCES_38.filter((p) => p.island === island);
+    const pop = list.reduce((s, p) => s + p.pop2024, 0);
+    const ipms = list.map((p) => p.ipm2025);
+    const umps = list.map((p) => p.ump2025);
+    detail.innerHTML = `<strong>${island} — ${list.length} provinsi</strong><span>Penduduk 2024: ${fmt(pop)} juta jiwa · IPM 2025: ${fmt(Math.min(...ipms))}–${fmt(Math.max(...ipms))} · UMP 2025: ${fmtRp(Math.min(...umps))}–${fmtRp(Math.max(...umps))}/bulan</span>`;
+  };
+  const showProvince = (p) => {
+    detail.innerHTML = `<strong>${p.name} — ${p.island}</strong><span>Penduduk 2024: ${fmt(p.pop2024)} juta jiwa · IPM 2025: ${fmt(p.ipm2025)} · UMP 2025: ${fmtRp(p.ump2025)}/bulan</span>`;
+  };
+  const renderProv38 = () => {
+    const q = root.querySelector('#prov38-search').value.trim().toLowerCase();
+    let rows = PROVINCES_38.filter((p) => (!islandFilter || p.island === islandFilter) &&
+      (q === '' || p.name.toLowerCase().includes(q) || p.island.toLowerCase().includes(q)));
+    rows = [...rows].sort((a, b) => {
+      const av = a[provKey]; const bv = b[provKey];
+      return typeof av === 'string' ? av.localeCompare(bv) * provDir : (av - bv) * provDir;
     });
-    topBody.innerHTML = rows.map((p, i) => `<tr><td class="rank-cell">${i + 1}</td><td>${p.name}</td><td>${fmt(p.pop)}</td><td>${fmt(p.pdrbPerCapita)}</td><td>${fmt(p.ipm)}</td></tr>`).join('');
-    root.querySelectorAll('#top10-table [data-sort]').forEach((btn) => {
-      btn.querySelector('.sort-mark').textContent = btn.dataset.sort === topKey ? (topDir === 1 ? '▲' : '▼') : '';
+    provBody.innerHTML = rows.map((p, i) => `<tr data-name="${p.name}"><td class="rank-cell">${i + 1}</td><td>${p.name}</td><td>${p.island}</td><td>${fmt(p.pop2024)}</td><td>${fmt(p.ipm2025)}</td><td>${fmtRp(p.ump2025)}</td></tr>`).join('') ||
+      '<tr><td colspan="6">Tidak ada provinsi yang cocok.</td></tr>';
+    countNote.textContent = `Menampilkan ${rows.length} dari 38 provinsi${islandFilter ? ` — pulau ${islandFilter}` : ''}.`;
+    root.querySelectorAll('#prov38-table [data-sort]').forEach((btn) => {
+      btn.querySelector('.sort-mark').textContent = btn.dataset.sort === provKey ? (provDir === 1 ? '▲' : '▼') : '';
+    });
+    provBody.querySelectorAll('tr[data-name]').forEach((tr) => tr.addEventListener('click', () => {
+      showProvince(PROVINCES_38.find((p) => p.name === tr.dataset.name));
+    }));
+  };
+  root.querySelectorAll('#island-map .island').forEach((g) => {
+    const pick = () => {
+      islandFilter = g.dataset.island;
+      root.querySelectorAll('#island-map .island').forEach((o) => o.classList.toggle('selected', o === g));
+      showIsland(islandFilter);
+      renderProv38();
+    };
+    g.addEventListener('click', pick);
+    g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+  });
+  root.querySelector('#island-all').addEventListener('click', () => {
+    islandFilter = null;
+    root.querySelectorAll('#island-map .island').forEach((o) => o.classList.remove('selected'));
+    detail.innerHTML = '<strong>Indonesia — 38 provinsi</strong><span>Penduduk 2024: 281,60 juta jiwa · IPM 2025: 54,91–85,05 · UMP 2025: Rp2.169.348–Rp5.396.760/bulan</span>';
+    renderProv38();
+  });
+  root.querySelectorAll('#prov38-table [data-sort]').forEach((btn) => btn.addEventListener('click', () => {
+    if (provKey === btn.dataset.sort) provDir *= -1;
+    else { provKey = btn.dataset.sort; provDir = provKey === 'name' || provKey === 'island' ? 1 : -1; }
+    renderProv38();
+  }));
+  root.querySelector('#prov38-search').addEventListener('input', renderProv38);
+  renderProv38();
+
+  // --- Tahun fokus 2021–2025 + chart 10 tahun ---
+  const yearSummary = root.querySelector('#year-summary');
+  const tenCanvas = root.querySelector('#tenyear-chart');
+  const tenNote = root.querySelector('#tenyear-note');
+  let focusYear = 2025;
+  let tenSeries = 'population';
+  const TEN_META = {
+    population: { name: 'Penduduk', unit: ' jt', note: 'Penduduk 2016–2025 (juta jiwa), BPS proyeksi pertengahan tahun; 2020 adalah Sensus Penduduk.' },
+    gdp: { name: 'PDB', unit: '', note: 'PDB nominal 2016–2025 (Rp triliun, harga berlaku), BPS Pendapatan Nasional Indonesia.' },
+    inflation: { name: 'Inflasi', unit: '%', note: 'Inflasi yoy Desember 2016–2025 (%), BPS.' },
+    exports: { name: 'Ekspor', unit: '', note: 'Ekspor 2016–2025 (US$ miliar), BPS Berita Resmi Statistik.' },
+  };
+  const renderYear = () => {
+    const i = focusYear - 2021;
+    const items = [
+      ['Penduduk', `${fmt(POPULATION_SERIES[i].pop)} jt`],
+      ['PDB', `Rp${fmt(GDP.nominal[i].value, 1)} T`],
+      ['Inflasi', `${fmt(INFLATION[i].value)}%`],
+      ['TPT', `${fmt(TPT[i].value)}%`],
+      ['Kemiskinan', `${fmt(POVERTY[i].value)}%`],
+      ['IPM', fmt(IPM[i].value)],
+      ['Ekspor', `US$${fmt(TRADE[i].exports)} miliar`],
+      ['Impor', `US$${fmt(TRADE[i].imports)} miliar`],
+    ];
+    yearSummary.innerHTML = items.map(([l, v]) => `<div class="year-item"><span class="year-label">${l} ${focusYear}</span><span class="year-value">${v}</span></div>`).join('');
+    root.querySelectorAll('#year-tabs [data-year]').forEach((b) => {
+      const on = Number(b.dataset.year) === focusYear;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', String(on));
     });
   };
-  root.querySelectorAll('#top10-table [data-sort]').forEach((btn) => btn.addEventListener('click', () => {
-    if (topKey === btn.dataset.sort) topDir *= -1;
-    else { topKey = btn.dataset.sort; topDir = topKey === 'name' ? 1 : -1; }
-    renderTop10();
-  }));
-  renderTop10();
+  const drawTenYear = () => {
+    const meta = TEN_META[tenSeries];
+    drawLineChart(tenCanvas, {
+      labels: TEN_YEAR.years,
+      series: [{ name: meta.name, values: TEN_YEAR[tenSeries], color: '#0e7490' }],
+      unit: meta.unit,
+    });
+    tenNote.textContent = meta.note;
+    root.querySelectorAll('#series-tabs [data-series]').forEach((b) => {
+      const on = b.dataset.series === tenSeries;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', String(on));
+    });
+  };
+  root.querySelectorAll('#year-tabs [data-year]').forEach((b) => b.addEventListener('click', () => { focusYear = Number(b.dataset.year); renderYear(); }));
+  root.querySelectorAll('#series-tabs [data-series]').forEach((b) => b.addEventListener('click', () => { tenSeries = b.dataset.series; drawTenYear(); }));
+  renderYear();
+  drawTenYear();
 
   const draw = () => {
     drawBarChart(root.querySelector('#home-gdp'), {
@@ -157,6 +313,7 @@ export function viewHome(root) {
       unit: '%',
     });
     drawSparks();
+    drawTenYear();
   };
   draw();
   redrawOnResize(draw);
@@ -293,11 +450,11 @@ export function viewEkonomi(root) {
       <p class="card-note">Sumber: BPS, Berita Resmi Statistik 5 Feb 2026 &amp; Pendapatan Nasional Indonesia 2021–2025.</p>
     </section>
     <section class="card"><h2>Komoditas ekspor &amp; impor, 2025</h2>
-      <table class="data-table"><thead><tr><th>Ekspor — 5 teratas (HS)</th><th>US$ M</th><th>Pangsa</th></tr></thead>
+      <table class="data-table"><thead><tr><th>Ekspor — 5 teratas (HS)</th><th>US$ miliar</th><th>Pangsa</th></tr></thead>
       <tbody>${EXPORT_TOP_2025.map((c) => `<tr><td>${c.name}</td><td>${fmt(c.value)}</td><td>${fmt(c.share, 1)}%</td></tr>`).join('')}</tbody></table>
-      <table class="data-table" style="margin-top:14px"><thead><tr><th>Impor — 3 terbesar (HS)</th><th>US$ M</th><th>Pangsa</th></tr></thead>
+      <table class="data-table" style="margin-top:14px"><thead><tr><th>Impor — 3 terbesar (HS)</th><th>US$ miliar</th><th>Pangsa</th></tr></thead>
       <tbody>${IMPORT_TOP_2025.map((c) => `<tr><td>${c.name}</td><td>${fmt(c.value)}</td><td>${fmt(c.share)}%</td></tr>`).join('')}</tbody></table>
-      <p class="card-note">Tiga kategori impor terbesar saja sudah lebih dari 43% total impor. Di dalam HS 27 ekspor: batu bara US$24,48 M; di dalam HS 15: minyak sawit &amp; turunannya US$24,42 M.</p>
+      <p class="card-note">Tiga kategori impor terbesar saja sudah lebih dari 43% total impor. Di dalam HS 27 ekspor: batu bara US$24,48 miliar; di dalam HS 15: minyak sawit &amp; turunannya US$24,42 miliar.</p>
       <button type="button" class="btn" id="commodity-csv">Unduh data komoditas 2025 (CSV)</button>
     </section>
   </div>`;
@@ -471,7 +628,7 @@ export function viewPendidikan(root) {
     ${kpi('Harapan sekolah', '13,30 th', 'Usia 7 tahun ke atas, 2025', '#/pendidikan')}
     ${kpi('Rata-rata sekolah', '9,07 th', 'Usia 25 tahun ke atas, 2025', '#/pendidikan')}
   </div>
-  ${chartCard('Indeks Pembangunan Manusia, 2022–2025', 'ipm-chart', 300, 'IPM naik konsisten sejak 2022 (73,77).')}
+  ${chartCard('Indeks Pembangunan Manusia, 2021–2025', 'ipm-chart', 300, 'IPM naik konsisten sejak 2021 (73,16, seri revisi BPS).')}
   <div class="two-col">
     <section class="card"><h2>Komponen IPM</h2>
       <label class="field">Tahun
@@ -563,9 +720,9 @@ export function viewPerdagangan(root) {
     'Ekspor 2025 mencapai US$282,91 miliar dan impor US$241,86 miliar — surplus US$41,05 miliar, naik dari US$31,33 miliar pada 2024 dan menjadi surplus tahunan terbesar. Neraca dagang surplus setiap bulan sejak Mei 2020.',
     SOURCES.bpsTrade2025)}
   <div class="kpi-grid">
-    ${kpi('Ekspor 2025', 'US$282,91 M', 'Naik 6,15% dari 2024', '#/perdagangan')}
-    ${kpi('Impor 2025', 'US$241,86 M', 'Naik 2,83% dari 2024', '#/perdagangan')}
-    ${kpi('Surplus 2025', 'US$41,05 M', 'Nonmigas US$60,75 M; migas defisit US$19,70 M', '#/perdagangan')}
+    ${kpi('Ekspor 2025', 'US$282,91 miliar', 'Naik 6,15% dari 2024', '#/perdagangan')}
+    ${kpi('Impor 2025', 'US$241,86 miliar', 'Naik 2,83% dari 2024', '#/perdagangan')}
+    ${kpi('Surplus 2025', 'US$41,05 miliar', 'Nonmigas US$60,75 miliar; migas defisit US$19,70 miliar', '#/perdagangan')}
     ${kpi('Surplus beruntun', '68 bln', 'Bulan surplus berturut-turut, Mei 2020–Des 2025', '#/perdagangan')}
   </div>
   ${chartCard('Ekspor vs impor, 2021–2025 (US$ miliar)', 'trade-chart', 300, 'Ekspor memuncak pada 2022 (US$291,90 miliar) saat boom harga komoditas, lalu kembali naik pada 2025.')}
@@ -615,7 +772,7 @@ export function viewTabel(root) {
     <thead><tr>${MASTER_COLUMNS.map((c) => `<th><button type="button" class="sort-btn" data-key="${c.key}">${c.label} <span class="sort-mark" aria-hidden="true"></span></button></th>`).join('')}</tr></thead>
     <tbody></tbody>
   </table></div>
-  <p class="card-note">“—” berarti survei/indikator itu tidak mencakup tahun tersebut (mis. penduduk hanya tersedia untuk 2025 pada tabel ini; deret sensus lengkap ada di halaman Penduduk). Klik judul kolom dua kali untuk membalik urutan.</p>`;
+  <p class="card-note">Semua sel terisi untuk 2021–2025: penduduk dari proyeksi pertengahan tahun BPS dan IPM dari seri revisi BPS (2021: 73,16). Klik judul kolom dua kali untuk membalik urutan.</p>`;
 
   let sortKey = 'year';
   let sortDir = 1;

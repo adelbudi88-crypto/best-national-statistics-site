@@ -3,11 +3,11 @@
 // written here. Sources are named next to each series and again on the
 // Tentang page. Years are the reference year of the figure, not the year the
 // page was built. "—" in a table means the series does not cover that year.
-// v2 (26 Nov 2026): added 2025 trade (BPS release 2 Feb 2026), 2025 sector
-// shares (BPS release 5 Feb 2026), the 2025 age–sex pyramid (BPS table,
-// updated 9 May 2025), the 10 largest provinces with 2025 PDRB per capita
-// and IPM, 2025 export/import commodity groups, 2026 average UMP, and the
-// 26 Nov 2026 "angka hari ini" strip (BI, BPS, Pertamina).
+// v3 (28 Nov 2026): IPM memakai seri revisi BPS (publikasi IPM 2025,
+// Apr 2026) — 2021 73,16, bukan 72,29 dari seri lama; penduduk 2021–2024
+// terisi dari proyeksi pertengahan tahun BPS sehingga tabel master tidak
+// lagi punya sel kosong; ditambah seri 10 tahun 2016–2025 dan data 38
+// provinsi (penduduk 2024, IPM 2025, UMP 2025) untuk peta + tabel beranda.
 
 export const YEARS = [2021, 2022, 2023, 2024, 2025];
 
@@ -27,6 +27,9 @@ export const SOURCES = {
   bpsPdrbProv: 'BPS, PDRB Provinsi menurut Lapangan Usaha 2021–2025 (rilis 13 Apr 2026; angka 2025 sangat sementara)',
   bpsIpmProv: 'BPS, Indeks Pembangunan Manusia 2025 (rilis 5 Nov 2025)',
   bpsPyramid: 'BPS, Jumlah Penduduk menurut Kelompok Umur dan Jenis Kelamin 2025 (diperbarui 9 Mei 2025)',
+  bpsPop2024: 'BPS, Proyeksi Penduduk Interim 2020–2023 (pertengahan tahun 2024)',
+  bpsIpmProv2025: 'BPS, Indeks Pembangunan Manusia 2025 (rilis 5 Nov 2025)',
+  kemnakerUmp2025: 'Kemnaker, Permenaker 16/2024 & SK Gubernur 38 provinsi — UMP 2025',
   kemnakerUmp: 'Kemnaker (Satudata) & SK Gubernur 38 provinsi, PP 49/2025 — UMP 2026',
   biKurs: 'Bank Indonesia, Kurs Transaksi 26 Nov 2026',
   bpsRice: 'BPS, harga beras minggu ke-3 November 2026 (Rakor Pengendalian Inflasi Daerah, 23 Nov 2026)',
@@ -44,6 +47,72 @@ export const POP_GROWTH = [
   { period: '2010–2015', rate: 1.43 },
   { period: '2015–2020', rate: 1.1 },
   { period: '2020–2025', rate: 1.08 },
+];
+// --- Penduduk pertengahan tahun (juta jiwa), BPS proyeksi ---
+// 2021–2024: proyeksi interim BPS; 2025: proyeksi pertengahan tahun.
+export const POPULATION_SERIES = [
+  { year: 2021, pop: 272.68 },
+  { year: 2022, pop: 275.77 },
+  { year: 2023, pop: 278.7 },
+  { year: 2024, pop: 281.6 },
+  { year: 2025, pop: 284.44 },
+];
+// --- Seri 10 tahun, 2016–2025 (untuk chart "10 tahun dalam 1 grafik") ---
+// Penduduk: BPS proyeksi pertengahan tahun (2020 sensus). PDB nominal:
+// BPS, Pendapatan Nasional Indonesia (Rp triliun). Inflasi: BPS, yoy
+// Desember (%). Ekspor: BPS, Berita Resmi Statistik (US$ miliar).
+export const TEN_YEAR = {
+  years: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025],
+  population: [258.71, 261.36, 264.01, 266.91, 270.2, 272.68, 275.77, 278.7, 281.6, 284.44],
+  gdp: [12401.7, 13589.8, 14838.7, 15832.6, 15443.4, 16977, 19588.5, 20892.3, 22139, 23821.1],
+  inflation: [3.02, 3.61, 3.13, 2.72, 1.68, 1.87, 5.51, 2.61, 1.57, 2.92],
+  exports: [144.49, 168.83, 180.22, 167.68, 163.19, 231.61, 291.9, 258.82, 266.53, 282.91],
+};
+// --- 38 provinsi: penduduk 2024, IPM 2025, UMP 2025 ---
+// Penduduk (juta): BPS, Proyeksi Penduduk Interim 2020–2023,
+// pertengahan tahun 2024 (total nasional 281,60 juta). IPM: BPS, IPM
+// 2025 (rilis 5 Nov 2025). UMP (Rp/bulan): Kemnaker, Permenaker 16/2024
+// & SK Gubernur; empat provinsi Papua (Papua, Papua Tengah, Papua
+// Selatan, Papua Pegunungan) memakai UMP yang sama, Rp4.285.847.
+export const PROVINCES_38 = [
+  { name: 'Aceh', island: 'Sumatera', pop2024: 5.55, ipm2025: 76.23, ump2025: 3685616 },
+  { name: 'Sumatera Utara', island: 'Sumatera', pop2024: 15.59, ipm2025: 76.47, ump2025: 2992559 },
+  { name: 'Sumatera Barat', island: 'Sumatera', pop2024: 5.84, ipm2025: 77.27, ump2025: 2994246 },
+  { name: 'Riau', island: 'Sumatera', pop2024: 6.73, ipm2025: 76.31, ump2025: 3508775 },
+  { name: 'Jambi', island: 'Sumatera', pop2024: 3.72, ipm2025: 75.13, ump2025: 3234533 },
+  { name: 'Sumatera Selatan', island: 'Sumatera', pop2024: 8.84, ipm2025: 74.76, ump2025: 3681570 },
+  { name: 'Bengkulu', island: 'Sumatera', pop2024: 2.11, ipm2025: 75.68, ump2025: 2670039 },
+  { name: 'Lampung', island: 'Sumatera', pop2024: 9.42, ipm2025: 73.98, ump2025: 2893086 },
+  { name: 'Kepulauan Bangka Belitung', island: 'Sumatera', pop2024: 1.53, ipm2025: 75.26, ump2025: 3876600 },
+  { name: 'Kepulauan Riau', island: 'Sumatera', pop2024: 2.18, ipm2025: 80.53, ump2025: 3623653 },
+  { name: 'DKI Jakarta', island: 'Jawa', pop2024: 10.68, ipm2025: 85.05, ump2025: 5396760 },
+  { name: 'Jawa Barat', island: 'Jawa', pop2024: 50.35, ipm2025: 75.9, ump2025: 2191232 },
+  { name: 'Jawa Tengah', island: 'Jawa', pop2024: 37.89, ipm2025: 74.77, ump2025: 2169348 },
+  { name: 'DI Yogyakarta', island: 'Jawa', pop2024: 3.76, ipm2025: 82.48, ump2025: 2264080 },
+  { name: 'Jawa Timur', island: 'Jawa', pop2024: 41.81, ipm2025: 76.13, ump2025: 2305985 },
+  { name: 'Banten', island: 'Jawa', pop2024: 12.43, ipm2025: 77.25, ump2025: 2905119 },
+  { name: 'Bali', island: 'Bali & Nusa Tenggara', pop2024: 4.43, ipm2025: 79.37, ump2025: 2996560 },
+  { name: 'Nusa Tenggara Barat', island: 'Bali & Nusa Tenggara', pop2024: 5.65, ipm2025: 73.97, ump2025: 2602931 },
+  { name: 'Nusa Tenggara Timur', island: 'Bali & Nusa Tenggara', pop2024: 5.66, ipm2025: 69.89, ump2025: 2328969 },
+  { name: 'Kalimantan Barat', island: 'Kalimantan', pop2024: 5.7, ipm2025: 72.09, ump2025: 2878286 },
+  { name: 'Kalimantan Tengah', island: 'Kalimantan', pop2024: 2.81, ipm2025: 74.86, ump2025: 3473621 },
+  { name: 'Kalimantan Selatan', island: 'Kalimantan', pop2024: 4.27, ipm2025: 76.1, ump2025: 3496194 },
+  { name: 'Kalimantan Timur', island: 'Kalimantan', pop2024: 4.05, ipm2025: 79.39, ump2025: 3579313 },
+  { name: 'Kalimantan Utara', island: 'Kalimantan', pop2024: 0.74, ipm2025: 74.04, ump2025: 3580160 },
+  { name: 'Sulawesi Utara', island: 'Sulawesi', pop2024: 2.7, ipm2025: 76.32, ump2025: 3775425 },
+  { name: 'Sulawesi Tengah', island: 'Sulawesi', pop2024: 3.12, ipm2025: 72.82, ump2025: 2914583 },
+  { name: 'Sulawesi Selatan', island: 'Sulawesi', pop2024: 9.46, ipm2025: 75.92, ump2025: 3657527 },
+  { name: 'Sulawesi Tenggara', island: 'Sulawesi', pop2024: 2.79, ipm2025: 74.25, ump2025: 3073552 },
+  { name: 'Gorontalo', island: 'Sulawesi', pop2024: 1.23, ipm2025: 72.62, ump2025: 3221731 },
+  { name: 'Sulawesi Barat', island: 'Sulawesi', pop2024: 1.5, ipm2025: 71.16, ump2025: 3104430 },
+  { name: 'Maluku', island: 'Maluku', pop2024: 1.95, ipm2025: 74.09, ump2025: 3141699 },
+  { name: 'Maluku Utara', island: 'Maluku', pop2024: 1.36, ipm2025: 72.52, ump2025: 3408000 },
+  { name: 'Papua', island: 'Papua', pop2024: 1.06, ipm2025: 74.69, ump2025: 4285847 },
+  { name: 'Papua Barat', island: 'Papua', pop2024: 0.58, ipm2025: 68.48, ump2025: 3613545 },
+  { name: 'Papua Selatan', island: 'Papua', pop2024: 0.54, ipm2025: 69.54, ump2025: 4285847 },
+  { name: 'Papua Tengah', island: 'Papua', pop2024: 1.47, ipm2025: 60.64, ump2025: 4285847 },
+  { name: 'Papua Pegunungan', island: 'Papua', pop2024: 1.47, ipm2025: 54.91, ump2025: 4285847 },
+  { name: 'Papua Barat Daya', island: 'Papua', pop2024: 0.63, ipm2025: 70.55, ump2025: 3614077 },
 ];
 export const POP_FACTS = {
   genZShare: 24.93,
@@ -206,7 +275,11 @@ export const POVERTY_MAR2025 = {
 };
 
 // --- Pendidikan & pembangunan manusia ---
+// Seri REVISI BPS (publikasi IPM 2025, Apr 2026): 2020 72,81; 2021 73,16;
+// 2022 73,77; 2023 74,39; 2024 75,02; 2025 75,90. Angka 72,29/72,91 yang
+// beredar adalah seri lama sebelum revisi dan TIDAK dipakai di sini.
 export const IPM = [
+  { year: 2021, value: 73.16 },
   { year: 2022, value: 73.77 },
   { year: 2023, value: 74.39 },
   { year: 2024, value: 75.02 },
@@ -235,7 +308,7 @@ export const STUNTING_COUNT_2024 = 4.48;
 // --- Perdagangan luar negeri (US$ miliar) ---
 // 2024 direvisi BPS pada rilis 2 Feb 2026 (sebelumnya 264,70 / 233,66 /
 // 31,04). 2025: ekspor +6,15%, impor +2,83% dibanding 2024; surplus
-// nonmigas US$60,75 M, migas defisit US$19,70 M.
+// nonmigas US$60,75 miliar, migas defisit US$19,70 miliar.
 export const TRADE = [
   { year: 2021, exports: 231.61, imports: 196.27, surplus: 35.34 },
   { year: 2022, exports: 291.9, imports: 237.44, surplus: 54.46 },
@@ -248,8 +321,8 @@ export const EXPORT_DESTINATIONS_2025 = [
   { name: 'Amerika Serikat', value: 30.96 },
   { name: 'India', value: 18.32 },
 ];
-// Golongan HS 2 digit, ekspor 2025. Di dalam HS 27: batu bara US$24,48 M
-// (−19,7%) dan di dalam HS 15: minyak sawit & turunannya US$24,42 M (+21,8%).
+// Golongan HS 2 digit, ekspor 2025. Di dalam HS 27: batu bara US$24,48 miliar
+// (−19,7%) dan di dalam HS 15: minyak sawit & turunannya US$24,42 miliar (+21,8%).
 export const EXPORT_TOP_2025 = [
   { name: 'Bahan bakar mineral & minyak (HS 27)', value: 45.11, share: 16.0 },
   { name: 'Minyak hewani & nabati — sawit (HS 15)', value: 34.36, share: 12.2 },
@@ -259,7 +332,7 @@ export const EXPORT_TOP_2025 = [
 ];
 // Impor 2025: tiga kategori terbesar saja sudah >43% total impor. Kategori
 // ke-4 dan ke-5 tidak dicantumkan karena agregat yang beredar bertentangan
-// (besi & baja impor: US$10,7 M vs US$17,5 M menurut dua olahan berbeda).
+// (besi & baja impor: US$10,7 miliar vs US$17,5 miliar menurut dua olahan berbeda).
 export const IMPORT_TOP_2025 = [
   { name: 'Mesin & peralatan mekanis (HS 84)', value: 36.17, share: 15.06 },
   { name: 'Bahan bakar mineral & minyak (HS 27)', value: 35.97, share: 14.98 },
@@ -285,7 +358,7 @@ export const MASTER_ROWS = YEARS.map((y) => {
   const ipm = IPM.find((d) => d.year === y);
   return {
     year: y,
-    population: y === 2025 ? 284.44 : null,
+    population: POPULATION_SERIES.find((d) => d.year === y)?.pop ?? null,
     gdpNominal: gdp ? gdp.value : null,
     gdpGrowth: pick(GDP.growth),
     inflation: pick(INFLATION),

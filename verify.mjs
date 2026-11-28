@@ -100,15 +100,63 @@ try {
     const homeText = await page.locator('#app').innerText();
     check('home today strip (kurs/beras/BBM 26 Nov)', homeText.includes('18.211') && homeText.includes('14.670') && homeText.includes('10.000'), homeText.slice(0, 120).replace(/\n/g, ' | '));
     check('home KPI values (ekspor/UMP/stunting)', homeText.includes('282,91') && homeText.includes('3,51') && homeText.includes('19,8%'));
-    // top-10 provinces table sorts by IPM: DKI Jakarta first
-    await page.click('#top10-table [data-sort="ipm"]');
+    // first screen (1280x800): both home charts visible without scrolling
+    const chartTops = await page.evaluate(() => {
+      const g = document.querySelector('#home-gdp').getBoundingClientRect();
+      const i = document.querySelector('#home-inf').getBoundingClientRect();
+      return { gdpTop: Math.round(g.top), infTop: Math.round(i.top), gdpBottom: Math.round(g.bottom), infBottom: Math.round(i.bottom) };
+    });
+    check('first screen: GDP chart top < 800', chartTops.gdpTop < 800, `top=${chartTops.gdpTop}`);
+    check('first screen: inflasi chart top < 800', chartTops.infTop < 800, `top=${chartTops.infTop}`);
+    const srcCount = await page.locator('.kpi-src').count();
+    check('home has 10 per-KPI source lines', srcCount === 10, `sources=${srcCount}`);
+    check('home has no "US$… M" unit left', !/US\$\d+,\d+ M\b/.test(homeText), 'regex US$… M absent');
+    // 38-province table: 38 rows, sorts by IPM and population
+    const provRows = await page.locator('#prov38-table tbody tr').count();
+    check('prov38 table has 38 rows', provRows === 38, `rows=${provRows}`);
+    await page.click('#prov38-table [data-sort="ipm2025"]');
     await page.waitForTimeout(200);
-    const topFirst = await page.locator('#top10-table tbody tr').first().innerText();
-    check('top10 sort by IPM (DKI Jakarta first, 85,05)', topFirst.includes('DKI Jakarta') && topFirst.includes('85,05'), topFirst.replace(/\n/g, ' | '));
-    await page.click('#top10-table [data-sort="pop"]');
+    const topIpm = await page.locator('#prov38-table tbody tr').first().innerText();
+    check('prov38 sort by IPM (DKI Jakarta first, 85,05)', topIpm.includes('DKI Jakarta') && topIpm.includes('85,05'), topIpm.replace(/\n/g, ' | '));
+    await page.click('#prov38-table [data-sort="pop2024"]');
     await page.waitForTimeout(200);
-    const topPop = await page.locator('#top10-table tbody tr').first().innerText();
-    check('top10 sort by population (Jawa Barat first)', topPop.includes('Jawa Barat') && topPop.includes('51,16'), topPop.replace(/\n/g, ' | '));
+    const topPop = await page.locator('#prov38-table tbody tr').first().innerText();
+    check('prov38 sort by population (Jawa Barat first, 50,35)', topPop.includes('Jawa Barat') && topPop.includes('50,35'), topPop.replace(/\n/g, ' | '));
+    await page.fill('#prov38-search', 'Papua');
+    await page.waitForTimeout(200);
+    const papuaRows = await page.locator('#prov38-table tbody tr').count();
+    check('prov38 search "Papua" (6 rows)', papuaRows === 6, `rows=${papuaRows}`);
+    await page.fill('#prov38-search', '');
+    await page.waitForTimeout(200);
+    // island map click filters the table + shows island detail
+    await page.click('#island-map .island[data-island="Sumatera"]');
+    await page.waitForTimeout(200);
+    const sumRows = await page.locator('#prov38-table tbody tr').count();
+    const mapDetail = await page.locator('#map-detail').innerText();
+    check('map click Sumatera filters table to 10 rows', sumRows === 10, `rows=${sumRows}`);
+    check('map detail shows Sumatera', mapDetail.includes('Sumatera') && mapDetail.includes('10 provinsi'), mapDetail.replace(/\n/g, ' | '));
+    await page.click('#island-all');
+    await page.waitForTimeout(200);
+    const allRows = await page.locator('#prov38-table tbody tr').count();
+    check('map reset shows 38 rows again', allRows === 38, `rows=${allRows}`);
+    // year focus 2021 + 10-year chart series picker
+    await page.click('#year-tabs [data-year="2021"]');
+    await page.waitForTimeout(200);
+    const yearText = await page.locator('#year-summary').innerText();
+    check('year focus 2021 (272,68 / 73,16)', yearText.includes('272,68') && yearText.includes('73,16'), yearText.replace(/\n/g, ' | ').slice(0, 160));
+    await page.click('#series-tabs [data-series="exports"]');
+    await page.waitForTimeout(200);
+    const tenActive = await page.locator('#series-tabs [data-series="exports"]').evaluate((el) => el.classList.contains('active'));
+    check('10-year series picker "Ekspor" active', tenActive);
+    const tenDrawn = await page.evaluate(() => {
+      const c = document.querySelector('#tenyear-chart');
+      if (!c) return false;
+      const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+      let n = 0;
+      for (let i = 3; i < d.length; i += 401 * 4) if (d[i] > 0) n++;
+      return n > 5;
+    });
+    check('10-year chart draws after series switch', tenDrawn);
 
     // header search finds an indicator
     await page.fill('#site-search', 'stunting');
